@@ -1,49 +1,84 @@
 package com.example.potater
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.safeContentPadding
-import androidx.compose.material3.Button
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import org.jetbrains.compose.resources.painterResource
+import androidx.compose.ui.graphics.Color
 
-import potater.shared.generated.resources.Res
-import potater.shared.generated.resources.compose_multiplatform
 
+
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-@Preview
 fun App() {
+    // This is what we send to the IP!
+    val message: ByteArray = "🥔".encodeToByteArray()
     MaterialTheme {
+        // IP input
+        var IPAddress by remember { mutableStateOf("") }
+
+        // Network attack type
+        val networkTypeOptions = listOf("UDP", "TCP", "ICMP")
+        var networkTypeExpanded by remember { mutableStateOf(false) }
+        var networkTypeSelectedOption by remember { mutableStateOf<String>(networkTypeOptions.first()) }
         var showContent by remember { mutableStateOf(false) }
         Column(
             modifier = Modifier
-                .background(MaterialTheme.colorScheme.primaryContainer)
+                .background(Color(0xFFFF9800))
                 .safeContentPadding()
                 .fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally,
+            horizontalAlignment = Alignment.Start,
         ) {
-            Button(onClick = { showContent = !showContent }) {
-                Text("Click me!")
-            }
-            AnimatedVisibility(showContent) {
-                val greeting = remember { Greeting().greet() }
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalAlignment = Alignment.CenterHorizontally,
+            ExposedDropdownMenuBox(
+                expanded = networkTypeExpanded,
+                onExpandedChange = { networkTypeExpanded = !networkTypeExpanded }
+            ) {
+                TextField(
+                    // menuAnchor links the text field to the dropdown layout
+                    modifier = Modifier.menuAnchor(),
+                    value = networkTypeSelectedOption,
+                    onValueChange = {}, // Leave empty because readOnly handles it
+                    readOnly = true,    // Prevents typing and hides the keyboard
+                    label = { Text("Network Type") },
+                )
+
+                // This generates the actual visual dropdown overlay
+                ExposedDropdownMenu(
+                    expanded = networkTypeExpanded,
+                    onDismissRequest = { networkTypeExpanded = false }
                 ) {
-                    Image(painterResource(Res.drawable.compose_multiplatform), null)
-                    Text("Compose: $greeting")
+                    networkTypeOptions.forEach { option ->
+                        DropdownMenuItem(
+                            text = { Text(text = option) },
+                            onClick = {
+                                networkTypeSelectedOption = option // Set the chosen value
+                                networkTypeExpanded = false        // Close the menu
+                            }
+                        )
+                    }
                 }
             }
+
+            TextField(
+                value = IPAddress,
+                onValueChange = {
+                    IPAddress = it
+                },
+                label = { Text("IP address") },
+                placeholder = { Text("IP address") },
+            )
+
+            Button(onClick = {
+                println("this needs to me implemented!")
+            }) {
+                Text("Start test")
+            }
+
         }
     }
 }
